@@ -2,7 +2,6 @@
   "name": "react-native-multi-analyzer",
   "version": "1.0.0",
   "description": "React native multibundle analyzer",
-  "main": "index.js",
   "keywords": [
     "react native bundle split",
     "react-native",
@@ -15,7 +14,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "CC",
-  "bin": "./src/react-native-multi-analyzer.js",
+  "bin": {"rn-multi-analyzer":"./src/react-native-multi-analyzer.js"},
   "files": [
     "src"
   ],
