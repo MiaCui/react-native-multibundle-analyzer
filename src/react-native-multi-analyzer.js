@@ -169,6 +169,9 @@ function generateBundlePromise(file) {
 async function generateBaseBundle() {
   const metroBin = getMetroCodeBin();
   let outputdir = path.join(process.cwd(), getReferenceDir());
+  if (fs.existsSync(outputdir)) {
+    return;
+  }
   let commands = ["build", "-t", "dllJson", "-od", outputdir];
   return execa(metroBin, commands);
 }
@@ -204,7 +207,7 @@ function generateHTML() {
           }
         });
       }
-      fs.removeSync(path.join(process.cwd(), getReferenceDir()));
+      //fs.removeSync(path.join(process.cwd(),getReferenceDir()));
       return open(bundleOutputExplorerFile);
     })
     .catch((err) => {
@@ -215,5 +218,6 @@ function generateHTML() {
 if (multipleMode) {
   generateBaseBundle().then(() => generateHTML());
 } else {
+  process.env.NODE_ENV = "development";
   generateHTML();
 }
