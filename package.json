@@ -1,6 +1,6 @@
 {
   "name": "react-native-multi-analyzer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "React native multibundle analyzer",
   "keywords": [
     "react native bundle split",
