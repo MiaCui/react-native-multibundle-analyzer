@@ -1,4 +1,4 @@
-# react-native-multi-analyzer
+# react-native-multibundle-analyzer
 
 React Native bundle visulizer, out of box tools.   
 Also support analyzing of multiple bundles splitted with amazing [metro-code-split](https://github.com/wuba/metro-code-split). 
