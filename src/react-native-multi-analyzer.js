@@ -135,11 +135,17 @@ function getMetroCodeBin() {
 }
 //获得入口文件
 function getMultipleEntryPoint(dir) {
-  const module = fs.readFileSync(dir);
-  if (Array.isArray(JSON.parse(module))) {
-    return JSON.parse(module);
+  if (/.json$/.test(dir)) {
+    const module = fs.readFileSync(dir);
+    if (Array.isArray(JSON.parse(module))) {
+      return JSON.parse(module);
+    } else {
+      console.error(chalk.red.bold(`Invalid Entry-file Type!\n`));
+      process.exit(1);
+    }
+  } else {
+    return [dir];
   }
-  return [];
 }
 
 const reactNativeBin = getReactNativeBin();
@@ -215,6 +221,7 @@ function generateHTML() {
       process.exit(1);
     });
 }
+
 if (multipleMode) {
   generateBaseBundle().then(() => generateHTML());
 } else {
