@@ -4,7 +4,7 @@
   "description": "React native multibundle analyzer",
   "repository": {
     "type": "git",
-    "url":"https://github.com/MiaCui/react-native-multi-analyzer"
+    "url":"https://github.com/MiaCui/react-native-multibundle-analyzer"
   },
   "keywords": [
     "react native bundle split",
