@@ -31,6 +31,7 @@ All options are optional.
 |entry-file|[See details Below](###entry-file-description)|``"main"`` in package.json or ``"index.js"``|
 |platform|Which platform to bundle for, could be ``ios`` or ``android``|``ios``|
 |format| Visulization output in specific formats, could be one of `html` &#124; `json` &#124; `tsv` | ``html``|
+|bundleOutput| Location of the output file |On Memory|
 
 ## entry-file-description
 
