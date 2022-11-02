@@ -83,7 +83,7 @@ if (argv["entry-file"]) {
 }
 
 process.env.NODE_ENV = dev ? "development" : "production";
-fs.ensureDirSync(baseDir);
+fs.ensureDirSync(bsDir);
 fs.ensureDirSync(tmpDir);
 fs.ensureDir(bundleOutdir);
 console.log(chalk.green.bold("Generating bundle..."));
