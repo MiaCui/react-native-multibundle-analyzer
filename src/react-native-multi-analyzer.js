@@ -7,54 +7,20 @@ const argv = require("minimist")(process.argv.slice(2));
 const execa = require("execa");
 const open = require("open");
 const { explore } = require("source-map-explorer");
+const { resolve } = require("path");
 const pkgJSON = JSON.parse(fs.readFileSync("./package.json"));
 
-//基础路径
-const baseDir = path.join(os.tmpdir(), "rn-multi-bundle-visualizer");
-//临时路径
-const tmpDir = path.join(baseDir, getAppName());
-//output存放路径
-const outDir = path.join(tmpDir, "output");
-//是否多bundle（多bundle默认入口依旧为index）
-const multipleMode = argv.multi || false;
-const bundleOutdir = path.join(outDir, "bundle");
-//自定义设置 entryFile
-let entryFile;
-//平台设置
-const platform = argv.platform || "ios";
-//是否开发环境
-const dev = argv.dev || false;
-const format = argv.format || "html";
-const bundleOutputExplorerFile = path.join(outDir, "explorer." + format);
-const onlyMapped = !!argv["only-mapped"] || false;
-
-if (argv["entry-file"]) {
-  if (multipleMode) {
-    entryFile = [
-      `_dll.${platform}`,
-      ...getMultipleEntryPoint(argv["entry-file"]),
-    ];
-  } else {
-    entryFile = [argv["entry-file"]];
+//从metro.config.js 拿referenceDir
+function getReferenceDir() {
+  const dir = fs
+    .readFileSync("./metro.config.js")
+    .toString()
+    .match(/referenceDir:[\s]{0,1}(\'|\")(\S*)(\'|\")/);
+  if (Array.isArray(dir) && dir.length === 4) {
+    return dir[2];
   }
-} else {
-  entryFile = [getEntryPoint()];
-  if (!entryFile.length) {
-    console.log(
-      chalk.red.underline.bold("Must input source path of entryFile!")
-    );
-    process.exit(1);
-  }
-  if (multipleMode) {
-    entryFile = [`_dll.${platform}`, ...entryFile];
-  }
+  return "";
 }
-
-process.env.NODE_ENV = dev ? "development" : "production";
-fs.ensureDirSync(baseDir);
-fs.ensureDirSync(tmpDir);
-fs.ensureDir(bundleOutdir);
-console.log(chalk.green.bold("Generating bundle..."));
 
 function sanitizeString(str) {
   return str ? str.replace(/[^\w]/gi, "") : str;
@@ -82,17 +48,52 @@ function getEntryPoint() {
   return entry;
 }
 
-//从metro.config.js 拿referenceDir
-function getReferenceDir() {
-  const dir = fs
-    .readFileSync("./metro.config.js")
-    .toString()
-    .match(/referenceDir:[\s]{0,1}(\'|\")(\S*)(\'|\")/);
-  if (dir.length === 4) {
-    return dir[2];
+//基础路径
+const baseDir = path.join(os.tmpdir(), "rn-multi-bundle-visualizer");
+//临时路径
+const tmpDir = path.join(baseDir, getAppName());
+//output存放路径
+const outDir = path.join(tmpDir, "output");
+//是否多bundle（多bundle默认入口依旧为index）
+const multipleMode = argv.multi || false;
+const bundleOutdir = path.join(outDir, "bundle");
+//自定义设置 entryFile
+let entryFile;
+//平台设置
+const platform = argv.platform || "ios";
+//是否开发环境
+const dev = argv.dev || false;
+const format = argv.format || "html";
+const bundleOutputExplorerFile = path.join(outDir, "explorer." + format);
+const onlyMapped = !!argv["only-mapped"] || false;
+
+if (argv["entry-file"]) {
+  if (multipleMode) {
+    let entryFile = [...getMultipleEntryPoint(argv["entry-file"])];
+    if (getReferenceDir()) {
+      entryFile = [`_dll.${platform}`, ...entryFile];
+    }
+  } else {
+    entryFile = [argv["entry-file"]];
   }
-  return "";
+} else {
+  entryFile = [getEntryPoint()];
+  if (!entryFile.length) {
+    console.log(
+      chalk.red.underline.bold("Must input source path of entryFile!")
+    );
+    process.exit(1);
+  }
+  if (multipleMode && getReferenceDir()) {
+    entryFile = [`_dll.${platform}`, ...entryFile];
+  }
 }
+
+process.env.NODE_ENV = dev ? "development" : "production";
+fs.ensureDirSync(baseDir);
+fs.ensureDirSync(tmpDir);
+fs.ensureDir(bundleOutdir);
+console.log(chalk.green.bold("Generating bundle..."));
 
 //获得reactnativecli
 function getReactNativeBin() {
@@ -174,12 +175,13 @@ function generateBundlePromise(file) {
 //生成commonbundle
 async function generateBaseBundle() {
   const metroBin = getMetroCodeBin();
-  let outputdir = path.join(process.cwd(), getReferenceDir());
-  if (fs.existsSync(outputdir)) {
-    return;
+  if (getReferenceDir()) {
+    let outputdir = path.join(process.cwd(), getReferenceDir());
+    if (fs.existsSync(outputdir)) {
+    }
+    let commands = ["build", "-t", "dllJson", "-od", outputdir];
+    await execa(metroBin, commands);
   }
-  let commands = ["build", "-t", "dllJson", "-od", outputdir];
-  return execa(metroBin, commands);
 }
 
 // 生成结果
