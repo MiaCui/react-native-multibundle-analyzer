@@ -7,8 +7,7 @@ const argv = require("minimist")(process.argv.slice(2));
 const execa = require("execa");
 const open = require("open");
 const { explore } = require("source-map-explorer");
-const { resolve } = require("path");
-const pkgJSON = JSON.parse(fs.readFileSync("./package.json"));
+const Package = JSON.parse(fs.readFileSync("./package.json"));
 
 //从metro.config.js 拿referenceDir
 function getReferenceDir() {
@@ -22,21 +21,13 @@ function getReferenceDir() {
   return "";
 }
 
-function sanitizeString(str) {
-  return str ? str.replace(/[^\w]/gi, "") : str;
-}
-
 function getAppName() {
-  if (pkgJSON.name) return sanitizeString(pkgJSON.name);
+  if (Package.name) return Package.name ? Package.name.trim() : Package.name;
   try {
     const appJSON = JSON.parse(fs.readFileSync("./app.json"));
-    return (
-      sanitizeString(appJSON.name) ||
-      sanitizeString(appJSON.expo.name) ||
-      "UnknownApp"
-    );
+    return appJSON.name.trim() || appJSON.expo.name.trim() || "UnKnown";
   } catch (err) {
-    return "UnknownApp";
+    return "UnKnown";
   }
 }
 
@@ -49,9 +40,9 @@ function getEntryPoint() {
 }
 
 //基础路径
-const baseDir = path.join(os.tmpdir(), "rn-multi-bundle-visualizer");
+const bsDir = path.join(os.tmpdir(), "rn-multibundle-analyzer");
 //临时路径
-const tmpDir = path.join(baseDir, getAppName());
+const tmpDir = path.join(bsDir, getAppName());
 //output存放路径
 const outDir = path.join(tmpDir, "output");
 //是否多bundle（多bundle默认入口依旧为index）
@@ -108,10 +99,8 @@ function getReactNativeBin() {
     return path.join(reactNativeDir, "./cli.js");
   } catch (e) {
     console.error(
-      chalk.red.bold(
-        `React-native binary could not be located. Please report this issue with environment info to:\n`
-      ),
-      chalk.blue.bold(`-> ${require("../package.json").bugs}`)
+      chalk.red.bold(`React-native binary could not be located.`),
+      chalk.blue.bold(`${require("../package.json").bugs}`)
     );
     process.exit(1);
   }
@@ -128,10 +117,8 @@ function getMetroCodeBin() {
     return path.join(MetroCondeBin, "./cli.js");
   } catch (e) {
     console.error(
-      chalk.red.bold(
-        `Metro-Code-Split binary could not be located. Please report this issue with environment info to:\n`
-      ),
-      chalk.blue.bold(`-> ${require("../package.json").bugs}`)
+      chalk.red.bold(`Metro-Code-Split binary could not be located`),
+      chalk.blue.bold(`${require("../package.json").bugs}`)
     );
     process.exit(1);
   }
@@ -160,7 +147,6 @@ function generateBundlePromise(file) {
       curr = "node_modules/.cache/metro-code-split/dll-entry.js";
     }
     const basecommand = ["bundle", "--platform", platform, "--dev", dev];
-    //const bundleOutput = path.join(tmpDir, platform + curr + '.bundle');
     basecommand.push(
       "--entry-file",
       curr,
@@ -211,9 +197,9 @@ function generateHTML() {
       if (result.errors) {
         result.errors.forEach((error) => {
           if (error.isWarning) {
-            console.log(chalk.yellow.bold(error.message));
+            console.log(chalk.blueBright.bold(error.message));
           } else {
-            console.log(chalk.red.bold(error.message));
+            console.log(chalk.greenBright.bold(error.message));
           }
         });
       }
