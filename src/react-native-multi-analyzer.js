@@ -64,7 +64,9 @@ const platform = argv.platform || "ios";
 //是否开发环境
 const dev = argv.dev || false;
 const format = argv.format || "html";
-const bundleOutputExplorerFile = path.join(outDir, "explorer." + format);
+const bundleOutputExplorerFile =
+  (argv.bundleOutput && path.join(bundleOutput, "explorer." + format)) ||
+  path.join(outDir, "explorer." + format);
 const onlyMapped = !!argv["only-mapped"] || false;
 
 if (argv["entry-file"]) {
