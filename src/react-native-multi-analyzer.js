@@ -32,7 +32,7 @@ function getAppName() {
 }
 
 function getEntryPoint() {
-  let entry = pkgJSON.main || "index.js";
+  let entry = Package.main || "index.js";
   if (entry[0] !== "." && entry[0] !== "/" && entry[0] !== "\\") {
     entry = "./" + entry;
   }
